@@ -1,8 +1,67 @@
-'use strict'
-
 const leftMenu = document.querySelector('.left-menu'),
 hamburger = document.querySelector('.hamburger'),
-showsList = document.querySelector('.tv-shows__list');
+tvShowsList = document.querySelector('.tv-shows__list'),
+modal = document.querySelector('.modal'),
+IMG_URL = 'https://image.tmdb.org/t/p/w185_and_h278_bestv2',
+API_KEY = '1d5edc0c4edafed036c74cef6f417ce7';
+
+const DBService = class {
+    getData = async (url) => {
+        const res = await fetch(url);
+        if (res.ok) {
+            return res.json();
+        } else {
+            throw new Error(`Не удалось получить данные по адресу ${url}`);
+        }  
+    };
+    getTestData = () => {
+        return this.getData('test.json');
+    };
+};
+const renderCard = response => {
+    tvShowsList.textContent = '';
+    response.results.forEach(item => {
+        const {
+             backdrop_path: backdrop,
+             name: title,
+             poster_path: poster,
+             vote_average: vote } = item;
+
+        const posterImg = poster ? IMG_URL + poster : 'img/no-poster.jpg';
+        const backdropImg = backdrop ? IMG_URL + backdrop : '';
+        
+
+        const card = document.createElement('li');
+        card.classList.add('tv-shows__item');
+        if (vote) {
+        card.innerHTML = `
+        <a href="#" class="tv-card">
+            <span class="tv-card__vote">${vote}</span>
+            <img class="tv-card__img"
+             src="${posterImg}"
+             data-backdrop="${backdropImg}"
+             alt="${title}">
+            <h4 class="tv-card__head">${title}</h4>
+        </a>
+        `;
+        tvShowsList.append(card);
+        } else {
+            card.innerHTML = `
+        <a href="#" class="tv-card">
+            <img class="tv-card__img"
+             src="${posterImg}"
+             data-backdrop="${backdropImg}"
+             alt="${title}">
+            <h4 class="tv-card__head">${title}</h4>
+        </a>
+        `;
+        tvShowsList.append(card);
+        }
+    });
+}
+
+new DBService().getTestData().then(renderCard);
+
 
 hamburger.addEventListener('click', () => {
     leftMenu.classList.toggle('openMenu');
@@ -13,7 +72,7 @@ document.addEventListener('click', event => {
     if (!event.target.closest('.left-menu')) {
         leftMenu.classList.remove('openMenu');
         hamburger.classList.remove('open');
-    };
+    }
 });
 
 leftMenu.addEventListener('click', event => {
@@ -24,23 +83,37 @@ leftMenu.addEventListener('click', event => {
         dropdown.classList.toggle('active');
         leftMenu.classList.add('openMenu');
         hamburger.classList.add('open');
-    };
+    }
 });
 
-const showBacdrop = ({ target }) => {
-    const tvCard = target.closest('.tv-card');
+tvShowsList.addEventListener('click', event => {
+    event.preventDefault();
+    const target = event.target;
+    const card = target.closest('.tv-card');
 
-    if (!tvCard) return;
-    const image = tvCard.querySelector('.tv-card__img');
-    const link = image.dataset.backdrop;
-    
-    if (link) {
-        image.dataset.backdrop = image.src;
-        image.src = link;
-        image.classList.toggle('tv-card__img_back')
+    if (card) {
+        document.body.style.overflow = 'hidden';
+        modal.classList.remove('hide');
     }
-   
-}; 
+});
 
-showsList.addEventListener('mouseover', showBacdrop, false);
-showsList.addEventListener('mouseout', showBacdrop, false);
+modal.addEventListener('click', event => {
+    if (event.target.classList.contains('modal') || event.target.closest('.cross')) {
+        document.body.style.overflow = '';
+        modal.classList.add('hide');
+    }
+});
+
+
+const changeImage = event => {
+    const card = event.target.closest('.tv-shows__item');
+    if (card) {
+        const img = card.querySelector('.tv-card__img');
+        if (img.dataset.backdrop) {
+            [img.src, img.dataset.backdrop] = [img.dataset.backdrop, img.src];
+        }
+    }
+};
+
+tvShowsList.addEventListener('mouseover', changeImage);
+tvShowsList.addEventListener('mouseout', changeImage);

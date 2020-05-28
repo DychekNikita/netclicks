@@ -44,7 +44,15 @@ const DBService = class {
 
 const renderCard = response => {
     tvShowsList.textContent = '';
-    response.results.forEach(item => {
+    console.log(response);
+    
+    if (response.total_results === 0) {
+        const alert = document.createElement('h1');
+        alert.textContent = 'К сожалению, по вашему запросу сериалов не найдено.';
+        tvShows.append(alert);
+        loading.remove();
+    } else {
+      response.results.forEach(item => {
         const {
              backdrop_path: backdrop,
              name: title,
@@ -70,7 +78,9 @@ const renderCard = response => {
         `;
         loading.remove();
         tvShowsList.append(card);
-    });
+    });  
+    }
+    
 };
 
 searchForm.addEventListener('submit', event => {
@@ -114,6 +124,7 @@ tvShowsList.addEventListener('click', event => {
     const card = target.closest('.tv-card');
 
     if (card) {
+        tvShows.append(loading);
         new DBService().getTvShow(card.id)
             .then(({ poster_path: posterPath, name: title, genres, vote_average: voteAverage, hompage, overview }) => {
                 tvCardImg.src = IMG_URL + posterPath;
@@ -130,6 +141,7 @@ tvShowsList.addEventListener('click', event => {
             .then(() => {
                 document.body.style.overflow = 'hidden';
                 modal.classList.remove('hide');
+                loading.remove();
             })
     }
 });

@@ -16,6 +16,7 @@ tvShowsHead = document.querySelector('.tv-shows__head'),
 posterWrapper = document.querySelector('.poster__wrapper'),
 modalContent = document.querySelector('.modal__content'),
 pagination = document.querySelector('.pagination'),
+submit = document.querySelector('.submit'),
 
 IMG_URL = 'https://image.tmdb.org/t/p/w185_and_h278_bestv2';
 

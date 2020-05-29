@@ -1209,3 +1209,14 @@ div:after {
 .pagination li a {
     padding: 0 5px;
 }
+
+.submit {
+    margin-top: 20px;
+    width: 100px;
+    height: 30px;
+    outline: none;
+    border: none;
+    border-radius: 5px;
+    background-color: black;
+    color: white;
+}

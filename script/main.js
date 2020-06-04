@@ -17,6 +17,8 @@ posterWrapper = document.querySelector('.poster__wrapper'),
 modalContent = document.querySelector('.modal__content'),
 pagination = document.querySelector('.pagination'),
 submit = document.querySelector('.submit'),
+trailer = document.getElementById('trailer'),
+headTrailer = document.getElementById('head-trailer')
 
 IMG_URL = 'https://image.tmdb.org/t/p/w185_and_h278_bestv2';
 
@@ -64,6 +66,8 @@ const DBService = class {
     getWeek = () => this.getData(`${this.SERVER}/tv/on_the_air?api_key=${this.API_KEY}&language=ru-RU`);
 
     getToday = () => this.getData(`${this.SERVER}/tv/airing_today?api_key=${this.API_KEY}&language=ru-RU`);
+
+    getVideo = id => this.getData(`${this.SERVER}/tv/${id}/videos?api_key=${this.API_KEY}&language=ru-RU`);
 
 };
    
@@ -191,7 +195,7 @@ tvShowsList.addEventListener('click', event => {
     if (card) {
         tvShows.append(loading);
         dbService.getTvShow(card.id)
-            .then(({ poster_path: posterPath, name: title, genres, vote_average: voteAverage, hompage, overview }) => {
+            .then(({ poster_path: posterPath, name: title, genres, vote_average: voteAverage, hompage, overview, id }) => {
                 if (posterPath) {
                     tvCardImg.src = IMG_URL + posterPath;
                     tvCardImg.alt = title;
@@ -210,7 +214,33 @@ tvShowsList.addEventListener('click', event => {
                 rating.textContent = voteAverage;
                 description.textContent = overview;
                 modalLink.href = hompage;
+                return id;
             })
+            
+            .then(dbService.getVideo)
+            .then(response => {
+               headTrailer.classList.add('hide');
+               trailer.textContent = '';
+               if (response.results.length) {
+               
+                response.results.forEach(item => {
+                    headTrailer.classList.remove('hide');
+                    const trailerItem = document.createElement('li');
+                    trailerItem.innerHTML = `
+                    <iframe width="400" height="300" 
+                        src="https://www.youtube.com/embed/${item.key}"
+                        frameborder="0"  
+                        allowfullscreen>
+                    </iframe>
+                    <h4>${item.name}</h4>
+                    `;
+                    trailer.append(trailerItem);
+               })
+               }
+               
+                
+            })
+
             .then(() => {
                 document.body.style.overflow = 'hidden';
                 modal.classList.remove('hide');
